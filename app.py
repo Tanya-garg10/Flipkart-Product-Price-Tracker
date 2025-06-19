@@ -2,24 +2,26 @@ import streamlit as st
 import json
 from tracker import fetch_price
 
-st.title("📦 Flipkart Product Price Tracker")
-
+# Load config
 with open("config.json") as f:
     config = json.load(f)
 
-url = config["product_url"]
-target = config["desired_price"]
+product_url = config["product_url"]
+target_price = config["desired_price"]
 
-st.write(f"🔗 [View Product]({url})")
+st.title("📦 Flipkart Product Price Tracker")
+st.markdown(f"[🔗 View Product]({product_url})", unsafe_allow_html=True)
 
-title, price = fetch_price(url)
+title, current_price = fetch_price(product_url)
 
-if price:
-    st.subheader(f"{title}")
-    st.metric("Current Price", f"₹{price}")
-    if price <= target:
-        st.success("🎯 Price dropped below target!")
-    else:
-        st.warning("🔔 Not yet at target price.")
+if title is None or current_price is None:
+    st.error("❌ Could not fetch the product price. Try running locally.")
 else:
-    st.error("❌ Could not fetch the product price.")
+    st.subheader(title)
+    st.write(f"💰 Current Price: **£{current_price}**")
+    st.write(f"🎯 Target Price: **£{target_price}**")
+
+    if current_price <= target_price:
+        st.success("✅ Great! The price is within your budget!")
+    else:
+        st.warning("⏳ Not yet. The price is still above your target.")

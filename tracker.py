@@ -2,29 +2,19 @@ import requests
 from bs4 import BeautifulSoup
 
 def fetch_price(url):
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-    }
-    response = requests.get(url, headers=headers)
-    soup = BeautifulSoup(response.content, "html.parser")
-
+    headers = {"User-Agent": "Mozilla/5.0"}
     try:
-        # Title
-        title = soup.find("span", class_="B_NuCI").get_text(strip=True)
+        response = requests.get(url, headers=headers)
+        soup = BeautifulSoup(response.content, 'html.parser')
 
-        # Price
-        price_div = soup.find("div", class_="_30jeq3 _16Jk6d")
-        if not price_div:
-            print("❌ Price tag not found.")
-            return None, None
+        # Book title
+        title = soup.find("h1").text.strip()
 
-        price_text = price_div.get_text(strip=True).replace("₹", "").replace(",", "")
-        price = float(price_text)
+        # Price is in <p class="price_color">£51.77</p>
+        price_text = soup.find("p", class_="price_color").text.strip()
+        price = float(price_text.replace("£", ""))
 
         return title, price
-
     except Exception as e:
-        print("❌ Could not fetch the product price.")
-        print("⚠️ Error:", e)
+        print("Error fetching data:", e)
         return None, None
-
