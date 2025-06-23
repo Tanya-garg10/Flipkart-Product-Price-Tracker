@@ -1,29 +1,29 @@
 import streamlit as st
 import json
 from selenium_tracker import fetch_price
-from notifier import send_email  # Optional: Only if email alert is used
 
 # Load config
 with open("config.json") as f:
     config = json.load(f)
 
-url = config["product_url"]
-target_price = config["desired_price"]
+product_url = config["url"]
+target_price = config["target_price"]
 
-st.title("📦 Flipkart Price Tracker")
-st.markdown(f"[🔗 View Product]({url})", unsafe_allow_html=True)
+st.set_page_config(page_title="Flipkart Product Price Tracker", page_icon="📦")
 
-title, price = fetch_price(url)
+st.title("📦 Flipkart Product Price Tracker")
+st.markdown("Track your product prices in real-time and get alerts when they drop! 🎯")
 
-if not title or not price:
-    st.error("❌ Could not fetch the product price.")
-else:
-    st.subheader(title)
-    st.write(f"💰 Current Price: ₹{price}")
-    st.write(f"🎯 Target Price: ₹{target_price}")
+st.markdown(f"🔗 [View Product]({product_url})")
+
+title, price = fetch_price(product_url)
+
+if price is not None:
+    st.success(f"**{title}**\n\n💰 Current Price: ₹{price}")
 
     if price <= target_price:
-        st.success("✅ Great! The price is within your budget!")
-        # send_email(title, price)  # Optional: enable if email is needed
-    else:
-        st.warning("⏳ Price is still above your target.")
+        st.balloons()
+        st.warning("🎉 Good news! Price dropped below your target.")
+else:
+    st.error("❌ Could not fetch the product price.")
+

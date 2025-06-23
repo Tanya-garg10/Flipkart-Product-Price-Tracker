@@ -18,3 +18,6 @@ def fetch_price(url):
     except Exception as e:
         print("Error fetching data:", e)
         return None, None
+
+if price <= target_price: # type: ignore
+    send_email_alert(title, price) # type: ignore
