@@ -1,53 +1,40 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
-from selenium.common.exceptions import NoSuchElementException
+from webdriver_manager.chrome import ChromeDriverManager
 import json
 import time
-from email_utils import send_email
 
 def fetch_price():
-    # Load config.json
-    with open("config.json", "r") as file:
-        config = json.load(file)
-
-    url = config["url"]
-    target_price = config["target_price"]
-
-    # Headless Chrome
-    options = Options()
-    options.add_argument("--headless")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
-
-    # Start browser
-    driver = webdriver.Chrome(options=options)
-    driver.get(url)
-
-    time.sleep(3)  # wait for the page to load
-
     try:
-        # Find the price element using Flipkart class name
-        price_element = driver.find_element(By.CLASS_NAME, "_30jeq3._16Jk6d")
-        price_text = price_element.text.strip().replace("₹", "").replace(",", "")
-        current_price = int(price_text)
+        # Load config
+        with open("config.json", "r") as f:
+            config = json.load(f)
+        url = config["url"]
 
-        print(f"✅ Current Price: ₹{current_price}")
+        # Setup headless Chrome
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
 
-        if current_price <= target_price:
-            subject = "🔔 Flipkart Price Alert"
-            message = f"The price dropped to ₹{current_price}!\nCheck it here: {url}"
-            send_email(subject, message)
-            print("📧 Email alert sent!")
+        driver = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)
+        driver.get(url)
+        time.sleep(5)  # Let the page load
 
-        return current_price
+        # ✅ Get product title
+        title_elem = driver.find_element(By.CLASS_NAME, "_2KFngB")
+        title = title_elem.text.strip()
 
-    except NoSuchElementException:
-        print("❌ Could not fetch the product price.")
-        return None
-    finally:
+        # ✅ Get product price (₹ symbol is usually included)
+        price_elem = driver.find_element(By.CLASS_NAME, "_30jeq3")
+        price_text = price_elem.text.strip().replace("₹", "").replace(",", "")
+        price = float(price_text)
+
         driver.quit()
+        return price, title
 
-# Uncomment to test standalone
-# if __name__ == "__main__":
-#     fetch_price()
+    except Exception as e:
+        print("❌ Error in fetch_price():", e)
+        return None, None
+
