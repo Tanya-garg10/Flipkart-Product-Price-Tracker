@@ -30,4 +30,4 @@ if current_price:
 else:
     st.error("❌ Could not fetch the product price.")
 
-    with open("config.json", "r") as f
+    with open("config.json", "r") as f:
