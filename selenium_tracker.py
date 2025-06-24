@@ -1,40 +1,27 @@
+# selenium_tracker.py
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
-from webdriver_manager.chrome import ChromeDriverManager
-import json
 import time
 
-def fetch_price():
+def fetch_price(url):
     try:
-        # Load config
-        with open("config.json", "r") as f:
-            config = json.load(f)
-        url = config["url"]
+        options = Options()
+        options.add_argument("--headless")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        driver = webdriver.Chrome(options=options)
 
-        # Setup headless Chrome
-        chrome_options = Options()
-        chrome_options.add_argument("--headless")
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
-
-        driver = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)
         driver.get(url)
-        time.sleep(5)  # Let the page load
+        time.sleep(5)  # Wait for page to load
 
-        # ✅ Get product title
-        title_elem = driver.find_element(By.CLASS_NAME, "_2KFngB")
-        title = title_elem.text.strip()
-
-        # ✅ Get product price (₹ symbol is usually included)
-        price_elem = driver.find_element(By.CLASS_NAME, "_30jeq3")
-        price_text = price_elem.text.strip().replace("₹", "").replace(",", "")
-        price = float(price_text)
-
+        # Use updated selector based on Flipkart's structure
+        price_element = driver.find_element(By.XPATH, "//div[contains(@class, '_30jeq3')]")
+        price_text = price_element.text.strip().replace("₹", "").replace(",", "")
         driver.quit()
-        return price, title
 
+        return float(price_text)
     except Exception as e:
-        print("❌ Error in fetch_price():", e)
-        return None, None
+        print(f"[❌ ERROR] {e}")
+        return None
 
