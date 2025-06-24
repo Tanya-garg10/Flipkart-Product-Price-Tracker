@@ -4,3 +4,4 @@ webdriver-manager
 requests
 beautifulsoup4
 python-dotenv
+email-validator
