@@ -30,4 +30,7 @@ if current_price:
 else:
     st.error("❌ Could not fetch the product price.")
 
-    with open("config.json", "r") as f:
+with open("config.json") as f:
+    config = json.load(f)
+    product_url = config["url"]
+    target_price = config["target_price"]
